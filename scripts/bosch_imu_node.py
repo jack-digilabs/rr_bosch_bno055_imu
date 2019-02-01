@@ -188,9 +188,7 @@ if __name__ == '__main__':
     operation_mode = rospy.get_param('~operation_mode', OPER_MODE_NDOF)
 
     # Open serial port
-    rospy.loginfo("Opening serial port: %s...", port)
-    rospy.loginfo("Frequency: %i...", frequency)
-    rospy.loginfo("Operation Mode: %i...", operation_mode)
+    rospy.loginfo("Opening serial port %s at frequency %i in op mode %i.", port, frequency, operation_mode)
 
     try:
         ser = serial.Serial(port, 115200, timeout=0.2)
