@@ -1,9 +1,11 @@
 <launch>
 
-  <!-- Run Bosch BNO055 IMU -->
-  <node pkg="rr_bosch_imu" type="bosch_imu_node.py" name="bosch_imu_node" output="screen">
-    <param name="port" value="/dev/ttyUSB0" />
-    <param name="frequency" value="30" />
-  </node>
+    <!-- Bosch BNO055 Driver -->
+    <node pkg="rr_bosch_bno055_imu" type="bosch_imu_node.py" name="bosch_imu_node" output="screen" >
+        <param name="port" value="/dev/imu" />
+        <param name="frame_id" value="imu_link" />
+        <param name="frequency" value="30" />
+        <param name="operation_mode" value="8" />
+    </node>
 
 </launch>
