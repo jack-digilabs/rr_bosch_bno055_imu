@@ -92,11 +92,14 @@ OPER_MODE_ACCMAG = 0x04
 OPER_MODE_ACCGYRO = 0x05
 OPER_MODE_MAGGYRO = 0x06
 OPER_MODE_AMG = 0x07
+#Fusion Modes (these provide orientation data)
 OPER_MODE_IMU = 0x08
 OPER_MODE_COMPASS = 0x09
 OPER_MODE_M4G = 0x0a
 OPER_MODE_NDOF_FMC_OFF = 0x0b
 OPER_MODE_NDOF = 0x0C
+
+FUSION_MODES = {OPER_MODE_IMU, OPER_MODE_COMPASS, OPER_MODE_M4G, OPER_MODE_NDOF_FMC_OFF, OPER_MODE_NDOF}
 
 #  Power modes
 PWR_MODE_NORMAL = 0x00
@@ -226,10 +229,18 @@ if __name__ == '__main__':
     if not(write_to_dev(ser, AXIS_MAP_SIGN, 1, 0x06)):
         rospy.logerr("Unable to set IMU axis signs.")
 
-    if not(write_to_dev(ser, OPER_MODE, 1, OPER_MODE_NDOF)):
+    if not(write_to_dev(ser, OPER_MODE, 1, operation_mode)):
         rospy.logerr("Unable to set IMU operation mode into operation mode.")
 
     rospy.loginfo("Bosch BNO055 IMU configuration complete.")
+
+    if operation_mode in FUSION_MODES:
+        in_fusion_mode = True
+        rospy.loginfo("In fusion mode.")
+    else:
+        in_fusion_mode = False
+        rospy.loginfo("Not in fusion mode.")
+
 
     rate = rospy.Rate(frequency)
 
@@ -262,10 +273,17 @@ if __name__ == '__main__':
             imu_data.header.stamp = rospy.Time.now()
             imu_data.header.frame_id = frame_id
             imu_data.header.seq = seq
-            imu_data.orientation.w = float(st.unpack('h', st.pack('BB', buf[24], buf[25]))[0])
-            imu_data.orientation.x = float(st.unpack('h', st.pack('BB', buf[26], buf[27]))[0])
-            imu_data.orientation.y = float(st.unpack('h', st.pack('BB', buf[28], buf[29]))[0])
-            imu_data.orientation.z = float(st.unpack('h', st.pack('BB', buf[30], buf[31]))[0])
+
+            if in_fusion_mode:
+                imu_data.orientation.w = float(st.unpack('h', st.pack('BB', buf[24], buf[25]))[0])
+                imu_data.orientation.x = float(st.unpack('h', st.pack('BB', buf[26], buf[27]))[0])
+                imu_data.orientation.y = float(st.unpack('h', st.pack('BB', buf[28], buf[29]))[0])
+                imu_data.orientation.z = float(st.unpack('h', st.pack('BB', buf[30], buf[31]))[0])
+            else:
+                imu_data.orientation.w = 0
+                imu_data.orientation.x = 0
+                imu_data.orientation.y = 0
+                imu_data.orientation.z = 0
             imu_data.linear_acceleration.x = float(st.unpack('h', st.pack('BB', buf[32], buf[33]))[0]) / acc_fact
             imu_data.linear_acceleration.y = float(st.unpack('h', st.pack('BB', buf[34], buf[35]))[0]) / acc_fact
             imu_data.linear_acceleration.z = float(st.unpack('h', st.pack('BB', buf[36], buf[37]))[0]) / acc_fact
