@@ -186,6 +186,8 @@ if __name__ == '__main__':
     frame_id = rospy.get_param('~frame_id', 'imu_link')
     frequency = rospy.get_param('~frequency', 100)
     operation_mode = rospy.get_param('~operation_mode', OPER_MODE_NDOF)
+    accel_cov = rospy.get_param('~accel_covariance', 3.34e-5)
+    gyro_cov = rospy.get_param('~gyro_covariance', 4.9e-5)
 
     # Open serial port
     rospy.loginfo("Opening serial port %s at frequency %i in op mode %i.", port, frequency, operation_mode)
@@ -267,11 +269,15 @@ if __name__ == '__main__':
             imu_data.linear_acceleration.x = float(st.unpack('h', st.pack('BB', buf[32], buf[33]))[0]) / acc_fact
             imu_data.linear_acceleration.y = float(st.unpack('h', st.pack('BB', buf[34], buf[35]))[0]) / acc_fact
             imu_data.linear_acceleration.z = float(st.unpack('h', st.pack('BB', buf[36], buf[37]))[0]) / acc_fact
-            imu_data.linear_acceleration_covariance[0] = -1
+            imu_data.linear_acceleration_covariance= [accel_cov, 0, 0,
+                                                     0, accel_cov, 0,
+                                                     0, 0, accel_cov]
             imu_data.angular_velocity.x = float(st.unpack('h', st.pack('BB', buf[12], buf[13]))[0]) / gyr_fact
             imu_data.angular_velocity.y = float(st.unpack('h', st.pack('BB', buf[14], buf[15]))[0]) / gyr_fact
             imu_data.angular_velocity.z = float(st.unpack('h', st.pack('BB', buf[16], buf[17]))[0]) / gyr_fact
-            imu_data.angular_velocity_covariance[0] = -1
+            imu_data.angular_velocity_covariance= [gyro_cov, 0, 0,
+                                                  0, gyro_cov, 0,
+                                                  0, 0, gyro_cov]
             pub_data.publish(imu_data)
 
             # Publish magnetometer data

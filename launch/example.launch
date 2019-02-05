@@ -6,6 +6,8 @@
         <param name="frame_id" value="imu_link" />
         <param name="frequency" value="30" />
         <param name="operation_mode" value="8" />
+        <param name="accel_covariance" value="3.34e-5" />
+        <param name="gyro_covariance" value="4.9e-5" />
     </node>
 
 </launch>
